@@ -54,6 +54,7 @@ export default async function handler(req, res) {
   }
   try {
     const docxhtml = await docx2html(fileUrl);
+    return res.json({ docxhtml });
     if (docxhtml && docxhtml.html) {
       const docxjson = html2json(docxhtml.html);
       return res.json({ docxjson, docxhtml });
