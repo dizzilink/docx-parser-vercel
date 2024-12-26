@@ -11,14 +11,15 @@ export default async function handler(req, res) {
         throw new Error('Failed to fetch file');
       }
       const arrayBuffer = await response.arrayBuffer();
-      const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+      const result = await mammoth.convertToHtml({ buffer: arrayBuffer }, {
+        debug: true 
+      });
       return {
         html: result.value,
         errors: result.messages
       }
     } catch (error) {
-      console.error('Error:', error);
-      return null;
+      throw new Error(error.message);
     }
   }
 
@@ -54,7 +55,6 @@ export default async function handler(req, res) {
   }
   try {
     const docxhtml = await docx2html(fileUrl);
-    return res.json({ docxhtml });
     if (docxhtml && docxhtml.html) {
       const docxjson = html2json(docxhtml.html);
       return res.json({ docxjson, docxhtml });
@@ -62,11 +62,6 @@ export default async function handler(req, res) {
       throw new Error("Error Parsing Html");
     }
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 400,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    return res.json({ error : error.message });
   }
 }
