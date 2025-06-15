@@ -28,26 +28,32 @@ export default async function handler(req, res) {
     const result = [];
     $('body > table').each((index, table) => {
       const tableData = [];
-      $(table).children('tbody').each((i, tbody) => {
-        $(tbody).children('tr').each((i, row) => {
-          const rowData = [];
-          $(row).children('td').each((i, cell) => {
-            const nestedTable = $(cell).find('table');
-            if (nestedTable.length > 0) {
-              nestedTable.each((i, nested) => {
-                $(nested).attr('style', 'border-collapse: collapse;');
-                $(nested).attr('border', '1');
-              });
-            }
-            $(cell).find('p').each((i, p) => {
-              const text = $(p).html();
-              const isNextParagraph = $(p).next(':not(text)').is('p');
-              $(p).replaceWith(text + (isNextParagraph ? '\n' : ''));
+      let $section = $(table).children('tbody');
+      if ($section.length === 0) {
+        $section = $(table).children('thead');
+      }
+      $section.children('tr').each((i, row) => {
+        const rowData = [];
+        let $cells = $(row).children('td');
+        if ($cells.length === 0) {
+          $cells = $(row).children('th');
+        }
+        $cells.each((i, cell) => {
+          const nestedTable = $(cell).find('table');
+          if (nestedTable.length > 0) {
+            nestedTable.each((i, nested) => {
+              $(nested).attr('style', 'border-collapse: collapse;');
+              $(nested).attr('border', '1');
             });
-            rowData.push($(cell).html().trim());
+          }
+          $(cell).find('p').each((i, p) => {
+            const text = $(p).html();
+            const isNextParagraph = $(p).next(':not(text)').is('p');
+            $(p).replaceWith(text + (isNextParagraph ? '\n' : ''));
           });
-          tableData.push(rowData);
+          rowData.push($(cell).html().trim());
         });
+        tableData.push(rowData);
       });
       result.push(tableData);
     });
